@@ -7,6 +7,7 @@ local utils = require 'pl.utils'
 local List = require 'pl.List'
 local Map = require 'pl.Map'
 local text = require 'pl.text'
+local stringx = require 'pl.stringx'
 
 local doc = {}
 local global = require 'ldoc.builtin.globals'
@@ -543,17 +544,18 @@ function Item.check_tag(tags,tag, value, modifiers)
          if avalue then value = avalue..' '..value end
          if amod then
             modifiers = modifiers or {}
-            local value_tokens = utils.split(value)
+            local value_tokens = utils.split(stringx.strip(value))
             for m,v in pairs(amod) do
-               local idx = tonumber(v:match('^%$(%d+)'))
+               local idx = type(v) == 'number' and v or tonumber(v:match('^%$(%d+)'))
                if idx then
-                  v, value = value:match('(%S+)(.*)')
-               --   v = value_tokens[idx]
-               --   value_tokens[idx] = ''
+                  --v, value = value:match('(%S+)(.*)')
+                  -- TODO: validate type modifier
+                  v = value_tokens[idx]
+                  value_tokens[idx] = ''
                end
                modifiers[m] = v
             end
-            -- value = table.concat(value_tokens, ' ')
+             value = table.concat(value_tokens, ' ')
          end
       else -- has to be a function that at least returns tag, value
          return alias(tags,value,modifiers)
